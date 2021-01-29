@@ -18,7 +18,9 @@ The data folder has a sub-folder called 'Pavlovia' that has one csv file for eve
 
 The experiment was part of a battery of tasks that consisted of 2 sessions, each of which had tasks accessible from a Qualtrics questionnaire. We used the first session to collect demographics information and the FIPS task was part of the second session, with some pre- and post task questions to ensure quality of the data. Therefore we need data from both questionnaires. We do not provide the raw data here as it contains unnecessary information that might break anonymity, and a lot of irrelevant information. Instead we use one cleaned csv file with only the necessary information. This has double and incomplete entries removed as well.
 
-To increase reproducibility, you can use the `renv` package to install the same versions of R packages that were used when making the RStudio Project (potentially a long time ago). They will be locally installed in the project directory and this may take some time and disk space. This R chunk will only be executed when you hit the green 'run' button on it:
+To increase reproducibility, you can use the `renv` package to install the same versions of R packages that were used when making the RStudio Project (potentially a long time ago). They will be locally installed in the project directory and this may take some time and disk space. This R chunk will only be executed when you hit the green 'run' button on it.
+
+The second line will interactively ask if you really want to install all the packages on the command line, which may be hidden.
 
 ```{r eval=FALSE}
 # this will attempt to get the same version of renv that was originally used:
