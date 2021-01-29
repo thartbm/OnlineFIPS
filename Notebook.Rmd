@@ -1,0 +1,91 @@
+---
+title: "Online FIPS"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+In this notebook, we process the data from the online experiment studying Frame Induced Position Shift (FIPS). 
+
+1. [OSF repository for the paper](https://osf.io/y5xrn/)
+2. [Preprint of the paper](https://doi.org/10.1101/2021.01.23.427924)
+3. [A demo version of the experiment](https://run.pavlovia.org/mthart/pubdemo/html/)
+
+This notebook comes in a zip file, which - if you unzip it - makes for an RStudio Project folder that includes raw data, and scripts to reproduce the figures and analyses presented in the paper. The data is, surprisingly, stored in the folder called 'data', and the R scripts are in a folder called 'R'.
+
+The data folder has a sub-folder called 'Pavlovia' that has one csv file for every run of the online experiment that was recorded. Some participants have apparently done the task twice, some may not have finished the task and other may not appear in the questionnaire data.
+
+The experiment was part of a battery of tasks that consisted of 2 sessions, each of which had tasks accessible from a Qualtrics questionnaire. We used the first session to collect demographics information and the FIPS task was part of the second session, with some pre- and post task questions to ensure quality of the data. Therefore we need data from both questionnaires. We do not provide the raw data here as it contains unnecessary information that might break anonymity, and a lot of irrelevant information. Instead we use one cleaned csv file with only the necessary information. This has double and incomplete entries removed as well.
+
+To increase reproducibility, you can use the `renv` package to install the same versions of R packages that were used when making the RStudio Project (potentially a long time ago). They will be locally installed in the project directory and this may take some time and disk space. This R chunk will only be executed when you hit the green 'run' button on it:
+
+```{r eval=FALSE}
+# this will attempt to get the same version of renv that was originally used:
+source("renv/activate.R")
+# which can then be used to install/restore the environment in which the scripts were run initially:
+renv::restore()
+```
+
+All functions to process the data are loaded here:
+
+```{r}
+# functions to select participants based on cursory inspection:
+source('R/participants.R')
+# functions to inspect / select participants based on task performance:
+source('R/select.R')
+# functions to do statistics on the selected data:
+source('R/statistics.R')
+# functions to create figures:
+source('R/visualize.R')
+```
+
+First we examine all participants to see which have useable data at first glance, and picks the latest from multiple data files on Pavlovia:
+
+```{r}
+participants <- getParticipants()
+str(participants)
+```
+
+This creates (overwrites) the file data/participants.csv, and returns the same information in a data frame. We can see that after removing participants based on questionnaire information there are 214 left.
+
+Then we can use the function `getFIPSdata()` to get the data in a more useful format. Let's first write a csv file with only data from participants that pass our performance criteria:
+
+```{r}
+write.csv(getFIPSdata()[['FIPS']], 'data/onlineFIPS-141p.csv',row.names=F)
+```
+
+# Effects of screen size and distance
+
+For ~40% of participants we have reasonably reliable screen calibration data (viewing distance and pixel size in centimeters). First we look at a figure of the strength of the illusion (slope of a line fit to perceiced dot distance over frame movement amplitude in all 12 FIPS trials) as a functional of how many degrees visual angle the frame subtends:
+
+```{r fig.width=5, fig.height=5}
+plotDVAeffects()
+```
+
+Looks like there is no effect of retinal frame size on the strength of the illusion. In order to confirm this we run a Bayesian regression:
+
+```{r}
+DVAregression()
+```
+
+The Bayes Factor for the regression model is 0.254, which is moderate evidence for the null hypothesis (that retinal frame size does not affect illusion strength). So, we do not take this into account for any further analyses.
+
+# Effects of frame movement speed and period over amplitude 
+
+First, let's look at the data:
+
+```{r fig.width=5, fig.height=5}
+plotFIPSpercepts()
+```
+
+The perceived distance between the dots seems pretty close to the distance the frame travels (dashed gray line), no matter if we keep velocity constant (and vary period) or if we keep period constant (and vary velocity).
+
+To test this, we run a Linear Mixed Effects model, with participant as a random effect, condition (categorical: constant velocity or period) and frame movement (numeric) as fixed effects. We use REML and a Nelder-Mead optimizer:
+
+```{r}
+FIPS_LME()
+```
+
+The distance the frame travels (framedist) predicts percept (t=24.6, p<.001) and has a coefficient of 0.91 which is getting pretty close to 1. Conditions don't matter by themselves (t=1.4, p=.17) and don't interact with frame distance either (t=1.3, p=.21).
+
