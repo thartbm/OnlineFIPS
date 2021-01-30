@@ -8,6 +8,8 @@ output:
 
 In this notebook, we process the data from the online experiment studying Frame Induced Position Shift (FIPS). 
 
+Other resources:
+
 1. [OSF repository for the paper](https://osf.io/y5xrn/)
 2. [Preprint of the paper](https://doi.org/10.1101/2021.01.23.427924)
 3. [A demo version of the experiment](https://run.pavlovia.org/mthart/pubdemo/html/)
@@ -54,7 +56,7 @@ This creates (overwrites) the file data/participants.csv, and returns the same i
 Then we can use the function `getFIPSdata()` to get the data in a more useful format. Let's first write a csv file with only data from participants that pass our performance criteria:
 
 ```{r}
-write.csv(getFIPSdata()[['FIPS']], 'data/onlineFIPS-141p.csv',row.names=F)
+write.csv(getFIPSdata()[['FIPS']], 'data/onlineFIPS-141p.csv', row.names=F)
 ```
 
 # Effects of screen size and distance

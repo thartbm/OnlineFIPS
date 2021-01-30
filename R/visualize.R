@@ -107,7 +107,7 @@ plotDVAeffects <- function(target='inline') {
        xlim=c(0,20), ylim=c(-.2,3), 
        ax=F, bty='n')
   
-  polygon(x=c(7.5,9,9,7.5),y=c(0,0,3,3),col='#EEEEEE',border=NA)
+  #polygon(x=c(7.5,9,9,7.5),y=c(0,0,3,3),col='#EEEEEE',border=NA)
   
   lines(c(1,19),c(1,1),col='#999999',lty=2)
   
