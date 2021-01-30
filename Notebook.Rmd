@@ -93,3 +93,36 @@ FIPS_LME()
 
 The distance the frame travels (framedist) predicts percept (t=24.6, p<.001) and has a coefficient of 0.91 which is getting pretty close to 1. Conditions don't matter by themselves (t=1.4, p=.17) and don't interact with frame distance either (t=1.3, p=.21).
 
+# ANOVA for experiment 1: frame edge perception
+
+Here we ask if the path length of the frame affects the perceived spatial offset between flashed edges of the frame.
+
+First we import the `afex` package and load the data:
+
+```{r}
+library('afex')
+exp1 <- read.csv('data/experiment_1.csv')
+str(exp1)
+```
+
+Note that the percept is stored as ...
+
+Then we do the ANOVA using `afex`, which does a repeated measures, one-way ANOVA
+
+```{r}
+afex::aov_ez(id='participant', dv='percept', within='path_length', data=exp1, type=3)
+```
+
+So there is no evidence for an effect of path_length on the percept ?? really ?? (F(1.45,10.16)=2.65, p=.127). To see if we can say that that effect does not exist, we want to get a Bayes Factor, using the `BayesFactor` package:
+
+```{r}
+library(BayesFactor)
+```
+
+And we use the F value (2.65), along with the N (number of participants: 8) and J (number of levels of the factor: 5) to do so:
+
+```{r}
+BayesFactor::oneWayAOV.Fstat(F=2.65, N=8, J=5)
+```
+
+The Bayes Factor is 0.473, which goes in the right direction, but is not below threshold. So all we can say is that we fail to get evidence for an effect of path length on percept.
