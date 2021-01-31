@@ -1,17 +1,35 @@
+
 library('afex')
 library('BayesFactor')
 
-exp1stats <- function() {
+lab_NwayAOV <- function(file='data/experiment2_frame_movement.csv', id='participant', dv='percept', within=c('path_length', 'condition'), type=3, printAOV=FALSE) {
   
-  exp1data <- read.csv('data/experiment_1.csv')
+  df <- read.csv(file)
   
-  exp1_aov <- afex::aov_ez(id='participant', dv='percept', within='path_length', data=exp1data, type=3)
-  cat('F-test (one-way ANOVA) to see if the distance the frame travels can\nexplain the perceived distance between the flashed edges of the frame:\n\n')
-  print(exp1_aov)
-  cat('\n\nIt can not, so we want a Bayes Factor of the effect of path length on perceived distance between edges:\n\n')
-  print(BayesFactor::oneWayAOV.Fstat(F=exp1_aov$anova_table$F, N=8, J=5, simple=T))
-  cat('\nIt remains undecided.\n')
+  df[[id]]     <- as.factor(df[[id]])
+  for (n in c(1:length(within))) {
+    df[[within[n]]] <- as.factor(df[[within[n]]])
+  }
+  
+  aov_model <- afex::aov_ez(id=id, dv=dv, within=within, data=df, type=type)
+  if (printAOV) {
+    print(aov_model)
+  }
+  
+  cat('\n\nA Bayes Factor version for the ANOVA:\n\n')
+  
+  form <- paste0(dv, " ~ ")
+  
+  for (n in c(1:length(within))) {
+    if (n == 1) {
+      form <- paste0(form, within[n])
+    } else {
+      form <- paste0(form, " + ", within[n])
+    }
+  }
+  form <- paste0(form, " + ", id)
+  
+  anovaBF(as.formula(form), data=df, whichRandom=id, whichModel='all')
   
 }
-
 

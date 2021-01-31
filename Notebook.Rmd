@@ -1,14 +1,24 @@
 ---
 title: "Online FIPS"
+monofont: Courier
 output:
   html_document:
-    toc: true
-    toc_depth: 2
+    df_print: paged
+    toc: yes
+    toc_depth: '2'
+  pdf_document:
+    latex_engine: xelatex
+    toc: yes
+    toc_depth: '2'
+mainfont: Arial
+urlcolor: blue
 ---
+
+# Overview
 
 In this notebook, we process the data from the online experiment studying Frame Induced Position Shift (FIPS). 
 
-Other resources:
+Other resources for this project:
 
 1. [OSF repository for the paper](https://osf.io/y5xrn/)
 2. [Preprint of the paper](https://doi.org/10.1101/2021.01.23.427924)
@@ -16,9 +26,13 @@ Other resources:
 
 This Notebook is (generated from) an R markdown file that comes with an [RStudio Project stored on GitHub](http://github.com/thartbm/OnlineFIPS). It includes scripts that will download the raw data and reproduce the figures and analyses presented in the paper. The data will, surprisingly, be stored in the folder called 'data', and the R scripts are in a folder called 'R'.
 
-The data folder has a sub-folder called 'Pavlovia' that has one csv file for every run of the online experiment that was recorded. Some participants have apparently done the task twice (or more), some may not have finished the task and others may not appear in the questionnaire data.
+## Data
+
+The data folder has a sub-folder called 'Pavlovia' that has one csv file for every run of the online experiment that was recorded. Some participants have apparently done the task twice (or more), some may not have finished the task and others may not appear in the questionnaire data. It will be filled from the [`data.zip`](https://osf.io/utyeh/download) file on the OSF repository.
 
 The experiment was part of a battery of tasks that consisted of 2 sessions, each of which had tasks accessible from a Qualtrics questionnaire. We used the first session to collect demographics information and the FIPS task was part of the second session, with some pre- and post task questions to ensure quality of the data. Therefore we need data from both questionnaires. We do not provide the raw data here as it contains unnecessary information that might break anonymity, and it has a lot of irrelevant information. Instead we use one cleaned csv file with only the necessary information. This has double and incomplete entries removed as well.
+
+## renv
 
 To increase reproducibility, you can use the `renv` package to install the same versions of R packages that were used when making the RStudio Project (potentially a long time ago, so this is an attempt to ensure this code will work for a long time). They will be locally installed in the project directory and this may take some time and disk space. This R chunk will only be executed when you hit the green 'run' button on it.
 
@@ -30,6 +44,8 @@ source("renv/activate.R")
 # which can then be used to install/restore the environment in which the scripts were run initially:
 renv::restore()
 ```
+
+## Analysis code
 
 All functions to process the data are loaded here:
 
@@ -45,6 +61,8 @@ source('R/xtra.R')
 source('R/visualize.R')
 ```
 
+## Online participants
+
 First we examine all participants (both in the task data and the questionnaire data) to see which have useable data at first glance, and picks the latest full task run if there are multiple data files on Pavlovia:
 
 ```{r}
@@ -53,6 +71,8 @@ str(participants)
 ```
 
 This creates (overwrites) the file data/participants.csv, and returns information in it as a data frame. We can see that after removing participants based on questionnaire information or incomplete / multiple task files there are 214 left.
+
+## Task data from selected participants
 
 Then we can use the function `getFIPSdata()` to get the data in a more useful format. Let's first write a csv file with only data from the 141 participants that pass our performance criteria:
 
@@ -92,14 +112,14 @@ To test this, we run a Linear Mixed Effects model, with participant as a random 
 
 ```{r}
 LME <- FIPS_LME()
-knitr::kable(coef(summary(LME)))
+knitr::kable(coef(summary(LME)), digits=3)
 ```
 
 The distance the frame travels (framedist) predicts percept (t=24.6, p<.001) and has a coefficient of 0.91 which is getting pretty close to 1. There is no evidence that conditions contribute (t=1.4, p=.17) and they don't interact with frame distance either (t=1.3, p=.21). That is, in the model, the distance the frame moves is sufficient to explain the perceived distance between the dots.
 
 # Figures
 
-The figures generated in this notebook can also be written to pdf or png files (more if you change the functions), which can be done here:
+The figures generated in this notebook can also be written to pdf or png files (more if you change the functions), which can be done here (turned off by default):
 
 ```{r eval=FALSE}
 target='png'
@@ -108,3 +128,48 @@ plotDVAeffects(target)
 plotFIPSpercepts(target)
 ```
 
+You will find the files in the `doc/` folder in the RStudio Project.
+
+# Bayes Factors for lab experiments
+
+Using a single wrapper function we can run ANOVAs and F-tests as well as their Bayesian variants to see if we can confirm the null-hypothesis (as opposed to only not rejecting it) for the lab experiments:
+
+## Experiment 1: perceived distance between frame edges 
+
+Here participants seemed to perceive the distance between the two edges of the frame as the same, regardless of the length of the path that the frame travelled. Let's see if the null can be confirmed:
+
+```{r}
+lab_NwayAOV(file='data/experiment_1.csv', within='path_length', printAOV = T)
+```
+
+It seems the with a BF of 1.55 the data doesn't support either hypothesis strongly.
+
+## Experiment 2: effect of speed
+
+Speed did not seem to affect the perceive distance between dots in experiment 2. Let's see if we can confirm the null-hypothesis here:
+
+```{r}
+lab_NwayAOV(file='data/experiment2_speed.csv', within='speed', printAOV = T)
+```
+
+Again, with a BF of 0.89 the data doesn't seem to support either hypothesis.
+
+## Experiment 2: effect of frame size
+
+The size of the frame did have a clear effect on the perceived distance between dots in experiment 2 either. Let's see if we can replicate this here:
+
+```{r}
+lab_NwayAOV(file='data/experiment2_size.csv', within='size', printAOV = T)
+```
+
+The BF indeed replicates this finding as well.
+
+## Experiment 2: constant speed and constant period conditions
+
+The online experiment was modelled after this task where the length of the path was varied while keeping either the speed constant or the period of movement. Path length seemed to be the only factor predicting perceived distance between the flashed dots, with no effect of condition (constant speed or constant period). Let's see if we can confirm the null hypothesis here:
+
+```{r}
+lab_NwayAOV(file='data/experiment2_frame_movement.csv', within=c('path_length', 'condition'), printAOV = T)
+```
+
+Here the results of the two kind of statistical analyses are somewhat contradictory. The ANOVA here suggests that condition has an effect on perceived distance between dots (F(1,7)=14.6, p=.007) along with a main effect of path length (F(1.8,12.58)=120.92, p<.001, GG-corrected) and that there is an interaction between path length and condition as well (F(2.16,15.09)=6.83,p=.007, GG-corrected). However in the Bayesian statistics, there is extreme evidence for the main effect of path length (BF=9.8*e+34) but there is moderate evidence for a null effect of condition (BF=0.26) as well as for the interaction between path length and condition (BF=0.13). The model that explains most of the data is the model with only path length as predictor (accounting for effects of participant).
