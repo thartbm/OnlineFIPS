@@ -39,6 +39,9 @@ plotFIPSpercepts <- function(target='inline') {
   if (target == 'pdf') {
     pdf(file='doc/main_effect.pdf', width=5, height=5)
   }
+  if (target == 'png') {
+    png(file='doc/main_effect.png', width=5, height=5, units='in', res=200)
+  }
   
   plot(-1000, -1000, 
        main='', xlab='frame movement [prop frame size]', ylab='percieved distance [prop frame size]', 
@@ -78,7 +81,7 @@ plotFIPSpercepts <- function(target='inline') {
   axis(side=1, at=c(.4,.5,.6,.7,.8))
   axis(side=2, at=c(.4,.5,.6,.7,.8))
   
-  if (target %in% c('pdf')) {
+  if (target %in% c('pdf','png')) {
     dev.off()
   }
   
@@ -92,14 +95,18 @@ plotDVAeffects <- function(target='inline') {
   colors <- getColors()
   
   # get data:
-  dva<- getDVAdata()
+  dva     <- getDVAdata()
   one_dva <- .245 / (dva$one_dva)
-  slope <- dva$slope
+  slope   <- dva$slope
   
   # set up pdf for pdf output
   if (target == 'pdf') {
     pdf(file='doc/screen_size_effect.pdf', width=5, height=5)
   }
+  if (target == 'png') {
+    png(file='doc/screen_size_effect.png', width=5, height=5, units='in', res=200)
+  }
+  
   
   # start figure:
   plot(-1000, -1000, 
@@ -134,7 +141,7 @@ plotDVAeffects <- function(target='inline') {
   axis(side=1, at=c(0,5,10,15,20))
   axis(side=2, at=c(0,1,2,3))
   
-  if (target %in% c('pdf')) {
+  if (target %in% c('pdf', 'png')) {
     dev.off()
   }
   

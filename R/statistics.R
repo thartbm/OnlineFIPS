@@ -23,11 +23,12 @@ FIPS_LME <- function() {
                               control = lme4::lmerControl(optimizer ="Nelder_Mead")
   )
   
-  cat('\nLINEAR MIXED EFFECTS MODEL:\n\n')
-  
-  print(summary(FIPS_LME))
+  #cat('\nLINEAR MIXED EFFECTS MODEL:\n\n')
+  #print(summary(FIPS_LME))
   
   options(default.contrasts)
+  
+  return(FIPS_LME)
   
 }
 

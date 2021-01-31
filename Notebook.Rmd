@@ -14,13 +14,13 @@ Other resources:
 2. [Preprint of the paper](https://doi.org/10.1101/2021.01.23.427924)
 3. [A demo version of the experiment](https://run.pavlovia.org/mthart/pubdemo/html/)
 
-This notebook comes in a zip file, which - if you unzip it - makes for an RStudio Project folder that includes raw data, and scripts to reproduce the figures and analyses presented in the paper. The data is, surprisingly, stored in the folder called 'data', and the R scripts are in a folder called 'R'.
+This Notebook is (generated from) an R markdown file that comes with an [RStudio Project stored on GitHub](http://github.com/thartbm/OnlineFIPS). It includes scripts that will download the raw data and reproduce the figures and analyses presented in the paper. The data will, surprisingly, be stored in the folder called 'data', and the R scripts are in a folder called 'R'.
 
-The data folder has a sub-folder called 'Pavlovia' that has one csv file for every run of the online experiment that was recorded. Some participants have apparently done the task twice, some may not have finished the task and other may not appear in the questionnaire data.
+The data folder has a sub-folder called 'Pavlovia' that has one csv file for every run of the online experiment that was recorded. Some participants have apparently done the task twice (or more), some may not have finished the task and others may not appear in the questionnaire data.
 
-The experiment was part of a battery of tasks that consisted of 2 sessions, each of which had tasks accessible from a Qualtrics questionnaire. We used the first session to collect demographics information and the FIPS task was part of the second session, with some pre- and post task questions to ensure quality of the data. Therefore we need data from both questionnaires. We do not provide the raw data here as it contains unnecessary information that might break anonymity, and a lot of irrelevant information. Instead we use one cleaned csv file with only the necessary information. This has double and incomplete entries removed as well.
+The experiment was part of a battery of tasks that consisted of 2 sessions, each of which had tasks accessible from a Qualtrics questionnaire. We used the first session to collect demographics information and the FIPS task was part of the second session, with some pre- and post task questions to ensure quality of the data. Therefore we need data from both questionnaires. We do not provide the raw data here as it contains unnecessary information that might break anonymity, and it has a lot of irrelevant information. Instead we use one cleaned csv file with only the necessary information. This has double and incomplete entries removed as well.
 
-To increase reproducibility, you can use the `renv` package to install the same versions of R packages that were used when making the RStudio Project (potentially a long time ago). They will be locally installed in the project directory and this may take some time and disk space. This R chunk will only be executed when you hit the green 'run' button on it.
+To increase reproducibility, you can use the `renv` package to install the same versions of R packages that were used when making the RStudio Project (potentially a long time ago, so this is an attempt to ensure this code will work for a long time). They will be locally installed in the project directory and this may take some time and disk space. This R chunk will only be executed when you hit the green 'run' button on it.
 
 The second line will interactively ask if you really want to install all the packages on the command line, which may be hidden.
 
@@ -33,35 +33,38 @@ renv::restore()
 
 All functions to process the data are loaded here:
 
-```{r}
+```{r result=FALSE, message=FALSE, warning=FALSE}
 # functions to select participants based on cursory inspection:
 source('R/participants.R')
 # functions to inspect / select participants based on task performance:
 source('R/select.R')
-# functions to do statistics on the selected data:
+# functions to do statistics:
 source('R/statistics.R')
+source('R/xtra.R')
 # functions to create figures:
 source('R/visualize.R')
 ```
 
-First we examine all participants to see which have useable data at first glance, and picks the latest from multiple data files on Pavlovia:
+First we examine all participants (both in the task data and the questionnaire data) to see which have useable data at first glance, and picks the latest full task run if there are multiple data files on Pavlovia:
 
 ```{r}
 participants <- getParticipants()
 str(participants)
 ```
 
-This creates (overwrites) the file data/participants.csv, and returns the same information in a data frame. We can see that after removing participants based on questionnaire information there are 214 left.
+This creates (overwrites) the file data/participants.csv, and returns information in it as a data frame. We can see that after removing participants based on questionnaire information or incomplete / multiple task files there are 214 left.
 
-Then we can use the function `getFIPSdata()` to get the data in a more useful format. Let's first write a csv file with only data from participants that pass our performance criteria:
+Then we can use the function `getFIPSdata()` to get the data in a more useful format. Let's first write a csv file with only data from the 141 participants that pass our performance criteria:
 
 ```{r}
 write.csv(getFIPSdata()[['FIPS']], 'data/onlineFIPS-141p.csv', row.names=F)
 ```
 
+This file should be readable by many different kinds of software, such as a spreadsheet program.
+
 # Effects of screen size and distance
 
-For ~40% of participants we have reasonably reliable screen calibration data (viewing distance and pixel size in centimeters). First we look at a figure of the strength of the illusion (slope of a line fit to perceiced dot distance over frame movement amplitude in all 12 FIPS trials) as a functional of how many degrees visual angle the frame subtends:
+For almost 50% of participants (69/141) we have reasonably reliable screen calibration data (viewing distance and pixel size in centimeters). First we look at a figure of the strength of the illusion (slope of a line fit to perceiced dot distance over frame movement amplitude in all 12 FIPS trials) as a function of how many degrees visual angle the frame subtends:
 
 ```{r fig.width=5, fig.height=5}
 plotDVAeffects()
@@ -83,46 +86,25 @@ First, let's look at the data:
 plotFIPSpercepts()
 ```
 
-The perceived distance between the dots seems pretty close to the distance the frame travels (dashed gray line), no matter if we keep velocity constant (and vary period) or if we keep period constant (and vary velocity).
+This figure uses 95% confidence intervals, whereas in the paper we chose to use SEM. The perceived distance between the dots seems pretty close to the distance the frame travels (dashed gray line), no matter if we keep velocity constant (and vary period) or if we keep period constant (and vary velocity).
 
 To test this, we run a Linear Mixed Effects model, with participant as a random effect, condition (categorical: constant velocity or period) and frame movement (numeric) as fixed effects. We use REML and a Nelder-Mead optimizer:
 
 ```{r}
-FIPS_LME()
+LME <- FIPS_LME()
+knitr::kable(coef(summary(LME)))
 ```
 
-The distance the frame travels (framedist) predicts percept (t=24.6, p<.001) and has a coefficient of 0.91 which is getting pretty close to 1. Conditions don't matter by themselves (t=1.4, p=.17) and don't interact with frame distance either (t=1.3, p=.21).
+The distance the frame travels (framedist) predicts percept (t=24.6, p<.001) and has a coefficient of 0.91 which is getting pretty close to 1. There is no evidence that conditions contribute (t=1.4, p=.17) and they don't interact with frame distance either (t=1.3, p=.21). That is, in the model, the distance the frame moves is sufficient to explain the perceived distance between the dots.
 
-# ANOVA for experiment 1: frame edge perception
+# Figures
 
-Here we ask if the path length of the frame affects the perceived spatial offset between flashed edges of the frame.
+The figures generated in this notebook can also be written to pdf or png files (more if you change the functions), which can be done here:
 
-First we import the `afex` package and load the data:
-
-```{r}
-library('afex')
-exp1 <- read.csv('data/experiment_1.csv')
-str(exp1)
+```{r eval=FALSE}
+target='png'
+#target='pdf'
+plotDVAeffects(target)
+plotFIPSpercepts(target)
 ```
 
-Note that the percept is stored as ...
-
-Then we do the ANOVA using `afex`, which does a repeated measures, one-way ANOVA
-
-```{r}
-afex::aov_ez(id='participant', dv='percept', within='path_length', data=exp1, type=3)
-```
-
-So there is no evidence for an effect of path_length on the percept ?? really ?? (F(1.45,10.16)=2.65, p=.127). To see if we can say that that effect does not exist, we want to get a Bayes Factor, using the `BayesFactor` package:
-
-```{r}
-library(BayesFactor)
-```
-
-And we use the F value (2.65), along with the N (number of participants: 8) and J (number of levels of the factor: 5) to do so:
-
-```{r}
-BayesFactor::oneWayAOV.Fstat(F=2.65, N=8, J=5)
-```
-
-The Bayes Factor is 0.473, which goes in the right direction, but is not below threshold. So all we can say is that we fail to get evidence for an effect of path length on percept.

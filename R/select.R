@@ -147,13 +147,13 @@ getFIPSdata <- function(data=c('FIPS'), set='selected') {
     allFIPS <- allFIPS[which(allFIPS$selected == TRUE),]
     wallach <- wallach[which(wallach$selected == TRUE),]
     catch   <-   catch[which(  catch$selected == TRUE),]
-    dva     <-     dva[which(    dva$selected == TRUE),]
+    DVAinfo <- DVAinfo[which(DVAinfo$selected == TRUE),]
   }
   if (set == 'strict') {
     allFIPS <- allFIPS[which(allFIPS$zeroes == FALSE),]
     wallach <- wallach[which(wallach$zeroes == FALSE),]
     catch   <-   catch[which(  catch$zeroes == FALSE),]
-    dva     <-     dva[which(    dva$zeroes == FALSE),]
+    DVAinfo <- DVAinfo[which(DVAinfo$zeroes == FALSE),]
   }
   
   
@@ -204,12 +204,13 @@ getFIPSconditions <- function() {
 getDVAdata <- function() {
   
   # get calibration data:
-  dva <- getFIPSdata(data=c('dva'))[['dva']]
+  dva <- getFIPSdata(data=c('dva'), set='selected')[['dva']]
+  dva <- dva[which(dva$selected == TRUE),]
   
   # get participants with reliable calibration:
   participants <- getParticipants()
   calibrated <- participants$participant[ which( participants$card_used == "Yes" & 
-                                                   participants$distance_method == "measured") ]
+                                                 participants$distance_method == "measured") ]
   
   # select reliable calibration data:
   dva <- dva[which(dva$participant %in% calibrated),]
