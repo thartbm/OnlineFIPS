@@ -1,5 +1,6 @@
 *.zip
 *.html
+*.pdf
 
 # History files
 .Rhistory
