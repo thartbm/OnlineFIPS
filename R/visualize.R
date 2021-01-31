@@ -44,7 +44,7 @@ plotFIPSpercepts <- function(target='inline') {
   }
   
   plot(-1000, -1000, 
-       main='', xlab='frame movement [prop frame size]', ylab='percieved distance [prop frame size]', 
+       main='', xlab='frame movement [prop frame size]', ylab='perceived distance [prop frame size]', 
        xlim=c(0.3,0.8), ylim=c(0.3,0.8), 
        asp=1, 
        ax=F, bty='n')
@@ -110,7 +110,7 @@ plotDVAeffects <- function(target='inline') {
   
   # start figure:
   plot(-1000, -1000, 
-       main='', xlab='frame size [dva]', ylab='percieved distance slope', 
+       main='', xlab='frame size [dva]', ylab='perceived distance slope', 
        xlim=c(0,20), ylim=c(-.2,3), 
        ax=F, bty='n')
   

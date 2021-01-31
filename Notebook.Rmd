@@ -2,12 +2,12 @@
 title: "Online FIPS"
 monofont: Courier
 output:
-  html_document:
-    df_print: paged
-    toc: yes
-    toc_depth: '2'
   pdf_document:
     latex_engine: xelatex
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    df_print: paged
     toc: yes
     toc_depth: '2'
 mainfont: Arial
