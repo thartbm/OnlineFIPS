@@ -33,3 +33,11 @@ lab_NwayAOV <- function(file='data/experiment2_frame_movement.csv', id='particip
   
 }
 
+
+# Use this function to replicate ANOVA's for the lab experiments, and get Bayes Factors for them.
+# Spoiler: it doesn't really add information.
+
+# lab_NwayAOV(file='data/experiment_1.csv', within='path_length', printAOV = T)
+# lab_NwayAOV(file='data/experiment2_speed.csv', within='speed', printAOV = T)
+# lab_NwayAOV(file='data/experiment2_size.csv', within='size', printAOV = T)
+# lab_NwayAOV(file='data/experiment2_frame_movement.csv', within=c('path_length', 'condition'), printAOV = T)
